@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 
 /**
- * @Auther: Allen
+ * @Auther: coco
  * @Date: 2018/7/30 14:33
  * @Description: 用户接口定义
  */
@@ -30,7 +30,7 @@ import javax.validation.Valid;
 @Slf4j
 @Api(value = "用户相关控制类")
 @RequestMapping({"/flowUser"})
-public class FlowUserProvider{
+public class FlowUserProvider {
 
     @Autowired
     ActivitiService activitiService;
@@ -119,7 +119,7 @@ public class FlowUserProvider{
         }
     }
 
-    @PostMapping(value = "/createMembership")
+    @PostMapping(value = "/createMem    bership")
     @ApiOperation(value = "新增用户与组关联", notes = "新增用户与组关联")
     public R createMembership(@RequestBody @ApiParam(value = "用户与组关联请求对象") @Valid MembershipReq membershipReq) {
         try {

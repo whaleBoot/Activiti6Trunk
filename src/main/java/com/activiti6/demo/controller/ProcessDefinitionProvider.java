@@ -2,10 +2,7 @@ package com.activiti6.demo.controller;
 
 import com.activiti6.demo.service.ActivitiService;
 import com.activiti6.demo.util.R;
-import com.activiti6.demo.vo.IsFinishProcessReq;
-import com.activiti6.demo.vo.QueryProcessInstanceReq;
-import com.activiti6.demo.vo.StartProcessInstanceReq;
-import com.activiti6.demo.vo.ViewProcessInstanceImageReq;
+import com.activiti6.demo.vo.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -41,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Allen
+ * @author coco
  * @Date: 2018/6/25 13:52
  * @Description: 流程定义相关
  */
@@ -49,7 +46,7 @@ import java.util.Map;
 @Slf4j
 @Api(value = "流程定义控制类")
 @RequestMapping({"/processDefinition"})
-public class ProcessDefinitionProvider  {
+public class ProcessDefinitionProvider {
 
 
     @Autowired
@@ -63,6 +60,19 @@ public class ProcessDefinitionProvider  {
 
     @Autowired
     RepositoryService repositoryService;
+
+
+    /**
+     * 动态创建BPMN模型，生成xml文件
+     *
+     * @return
+     */
+    @PostMapping("/createbpmn")
+    @ApiOperation(value = "动态创建部署BPMN模型，生成xml文件", notes = "动态创建部署BPMN模型，生成xml文件")
+    public R createBPMN(@RequestBody @Valid BpmnModelReq bpmnModelReq) {
+        activitiService.createBpmnModel(bpmnModelReq);
+        return R.ok();
+    }
 
 
     /***
@@ -111,7 +121,7 @@ public class ProcessDefinitionProvider  {
         try {
             Map<String, Object> variables = startProcessInstanceReq.getVariables();//流程配置参数
             variables.put("applyUserId", startProcessInstanceReq.getApplyUserId());//流程发起人
-            ProcessInstance processInstance = activitiService.startProcessInstance(startProcessInstanceReq.getInstanceKey(), variables);
+            ProcessInstance processInstance = activitiService.startProcessInstance(startProcessInstanceReq.getInstanceKey(), startProcessInstanceReq.getImgName(), variables);
             log.debug("processInstance:" + processInstance.getProcessDefinitionId());
             return R.ok().put("processInstanceId", processInstance.getId());
         } catch (Exception e) {

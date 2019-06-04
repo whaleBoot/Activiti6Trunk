@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 @ApiModel
-public class MembershipReq{
+public class MembershipReq {
 
     @ApiModelProperty(value = "用户ID", notes = "用户ID", required = true, dataType = "String")
     @NotBlank(message = "用户ID不能为空")

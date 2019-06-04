@@ -22,6 +22,9 @@ public class StartProcessInstanceReq {
     @NotBlank(message = "实例名称不能为空")
     private String instanceKey;
 
+    @ApiModelProperty(value = "流程图png名称", notes = "流程图名", required = true, dataType = "String")
+    @NotBlank(message = "生成的流程图名称不能为空")
+    private String imgName;
 
     @ApiModelProperty(value = "流程发起人", notes = "流程发起人", required = true, dataType = "String")
     @NotBlank(message = "流程发起人不能为空")

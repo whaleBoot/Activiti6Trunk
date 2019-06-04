@@ -1,5 +1,6 @@
 package com.activiti6.demo.service;
 
+import com.activiti6.demo.vo.BpmnModelReq;
 import org.activiti.engine.runtime.ProcessInstance;
 
 import java.io.InputStream;
@@ -30,7 +31,7 @@ public interface ActivitiService {
      * @param instanceKey 流程实例key
      * @param variables 参数
      */
-    public ProcessInstance startProcessInstance(String instanceKey, Map variables);
+    public ProcessInstance startProcessInstance(String instanceKey, String imgName, Map variables);
 
     /***
      * 通过key获取流程定义明细列表
@@ -105,6 +106,11 @@ public interface ActivitiService {
      * @param returnStart 是否返回到起点
      */
     public void rejectTask(String taskId, String assignee, boolean returnStart);
+
+    /**
+     * 创建流程图，绘制流程图
+     */
+    public void createBpmnModel(BpmnModelReq bpmnModelReq);
 
 
 }

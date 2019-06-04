@@ -15,7 +15,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 @ApiModel
-public class QueryProcessInstanceReq  {
+public class QueryProcessInstanceReq {
 
     @ApiModelProperty(value = "实例名称", notes = "实例名称", dataType = "String")
     @NotBlank(message = "实例名称不能为空")

@@ -11,12 +11,12 @@ import lombok.Data;
  */
 @Data
 @ApiModel
-public class QueryWaitTaskReq{
+public class QueryWaitTaskReq {
 
     @ApiModelProperty(value = "开始记录数", notes = "开始记录数", dataType = "int")
     private int firstResult = 0;
 
-    @ApiModelProperty(value = "每页记录数", notes = "每页记录数", dataType = "int" )
+    @ApiModelProperty(value = "每页记录数", notes = "每页记录数", dataType = "int")
     private int maxResults = 100;
 
 }

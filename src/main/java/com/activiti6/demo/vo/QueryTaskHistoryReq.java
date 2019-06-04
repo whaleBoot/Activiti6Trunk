@@ -13,7 +13,7 @@ import javax.validation.constraints.NotBlank;
  */
 @Data
 @ApiModel
-public class QueryTaskHistoryReq  {
+public class QueryTaskHistoryReq {
 
     @ApiModelProperty(value = "实例ID", notes = "实例ID", required = true, dataType = "String")
     @NotBlank(message = "实例ID不能为空")

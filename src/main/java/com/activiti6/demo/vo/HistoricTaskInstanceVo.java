@@ -8,7 +8,7 @@ import java.util.Map;
  * @Date: 2018/6/28 20:28
  * @Description:
  */
-public class HistoricTaskInstanceVo extends BaseVo{
+public class HistoricTaskInstanceVo extends BaseVo {
 
     protected String executionId;
     protected String name;

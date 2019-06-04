@@ -9,13 +9,13 @@ public class R extends HashMap<String, Object> {
     private static final long serialVersionUID = 1L;
 
     public R() {
-        this.put((String)"code", ResponseEnum.SUCCESS.getCode());
-        this.put((String)"msg", ResponseEnum.SUCCESS.getMsg());
+        this.put((String) "code", ResponseEnum.SUCCESS.getCode());
+        this.put((String) "msg", ResponseEnum.SUCCESS.getMsg());
     }
 
     public R(ResponseEnum response) {
-        this.put((String)"code", response.getCode());
-        this.put((String)"msg", response.getMsg());
+        this.put((String) "code", response.getCode());
+        this.put((String) "msg", response.getMsg());
     }
 
     public static R error() {
@@ -28,21 +28,21 @@ public class R extends HashMap<String, Object> {
 
     public static R error(HttpStatus code, String msg) {
         R r = new R();
-        r.put((String)"code", code);
-        r.put((String)"msg", msg);
+        r.put((String) "code", code);
+        r.put((String) "msg", msg);
         return r;
     }
 
     public static R error(int code, String msg) {
         R r = new R();
-        r.put((String)"code", code);
-        r.put((String)"msg", msg);
+        r.put((String) "code", code);
+        r.put((String) "msg", msg);
         return r;
     }
 
     public static R ok(String msg) {
         R r = new R();
-        r.put((String)"msg", msg);
+        r.put((String) "msg", msg);
         return r;
     }
 

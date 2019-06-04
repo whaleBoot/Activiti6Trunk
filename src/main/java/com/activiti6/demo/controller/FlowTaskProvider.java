@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * @author Allen
+ * @author coco
  * @Date: 2018/6/25 13:52
  * @Description: 任务相关
  */
@@ -28,7 +28,7 @@ import java.util.Map;
 @Slf4j
 @Api(value = "任务控制类")
 @RequestMapping({"/flowTask"})
-public class FlowTaskProvider{
+public class FlowTaskProvider {
 
 
     @Autowired

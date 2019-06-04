@@ -1,7 +1,6 @@
 package com.activiti6.demo.vo;
 
 
-
 import java.util.Date;
 import java.util.Map;
 
@@ -10,7 +9,7 @@ import java.util.Map;
  * @Date: 2018/6/27 20:18
  * @Description:
  */
-public class TaskVo extends BaseVo{
+public class TaskVo extends BaseVo {
 
     protected String id;
     protected String owner;

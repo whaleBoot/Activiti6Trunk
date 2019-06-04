@@ -1,13 +1,12 @@
 package com.activiti6.demo.service.impl;
 
 import com.activiti6.demo.service.ActivitiService;
-import com.activiti6.demo.vo.HistoricTaskInstanceVo;
-import com.activiti6.demo.vo.ProcessDefinitionVo;
-import com.activiti6.demo.vo.TaskVo;
+import com.activiti6.demo.util.BpmnUtil;
+import com.activiti6.demo.vo.*;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.bpmn.model.BpmnModel;
-import org.activiti.bpmn.model.FlowNode;
-import org.activiti.bpmn.model.SequenceFlow;
+import org.activiti.bpmn.BpmnAutoLayout;
+import org.activiti.bpmn.model.*;
+import org.activiti.bpmn.model.Process;
 import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricActivityInstance;
 import org.activiti.engine.history.HistoricTaskInstance;
@@ -18,27 +17,31 @@ import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntity;
 import org.activiti.engine.impl.persistence.entity.TaskEntityManagerImpl;
+import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.repository.ProcessDefinition;
 import org.activiti.engine.repository.ProcessDefinitionQuery;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
+import org.activiti.engine.test.ActivitiRule;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipInputStream;
 
 
 @Service
 @Slf4j
 public class ActivitiServiceImpl implements ActivitiService {
+
 
     @Autowired
     ProcessEngine processEngine;
@@ -100,7 +103,7 @@ public class ActivitiServiceImpl implements ActivitiService {
 
 
     @Override
-    public ProcessInstance startProcessInstance(String instanceKey, Map variables) {
+    public ProcessInstance startProcessInstance(String instanceKey, String imgName, Map variables) {
         /**
          * 启动请假单流程  并获取流程实例
          * 因为该请假单流程可以会启动多个所以每启动一个请假单流程都会在数据库中插入一条新版本的流程数据
@@ -108,6 +111,16 @@ public class ActivitiServiceImpl implements ActivitiService {
          *
          */
         ProcessInstance processInstance = runtimeService.startProcessInstanceByKey(instanceKey, variables);
+
+        try {
+//             Save process diagram to a file 保存BPMN流程图
+            InputStream processDiagram = repositoryService.getProcessDiagram(processInstance.getProcessDefinitionId());
+            FileUtils.copyInputStreamToFile(processDiagram, new File(imgName));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         log.debug(String.format("id:%s,activitiId:%s", processInstance.getId(), processInstance.getActivityId()));
         return processInstance;
     }
@@ -443,5 +456,78 @@ public class ActivitiServiceImpl implements ActivitiService {
         }
         return null;
     }
+
+    @Override
+    public void createBpmnModel(BpmnModelReq bpmnModelReq) {
+
+
+        String instanceKey = bpmnModelReq.getInstanceKey();
+        String resourceName = bpmnModelReq.getResourceName();
+        String filePath = bpmnModelReq.getFilePath();
+        String name = bpmnModelReq.getName();
+        List<UserTaskReq> taskList = bpmnModelReq.getTaskList();
+        Collections.sort(taskList);
+
+
+        // 1 Build up the model from scratch 创建bpmn模型
+        BpmnModel bpmnModel = new BpmnModel();
+        Process process = new Process();
+        SubProcess subProcess = new SubProcess();
+        bpmnModel.addProcess(process);
+
+        process.setId(instanceKey);
+
+        //1.1 创建bpmn元素
+        process.addFlowElement(BpmnUtil.createStartEvent());
+        for (UserTaskReq elem : taskList) {
+            if ("userTask".equals(elem.getType())) {
+                process.addFlowElement(BpmnUtil.createUserTask(elem.getId(), elem.getName(), elem.getAssignee()));
+            } else if ("exclusiveGateway".equals(elem.getType())) {
+                //排他网关
+                process.addFlowElement(BpmnUtil.createExclusiveGateway(elem.getId()));
+            } else if ("parallelGateway".equals(elem.getType())) {
+                //并行网关
+                process.addFlowElement(BpmnUtil.createParallelGateWar(elem.getId()));
+            }
+        }
+        process.addFlowElement(BpmnUtil.createEndEvent());
+
+        //1.2 将各个元素连接起来
+//        process.addFlowElement(BpmnUtil.createSequenceFlow("start", taskList.get(0).getId()));
+        for (int i = 0; i < taskList.size(); i++) {
+            for (String str : taskList.get(i).getPredecessor()) {
+                process.addFlowElement(BpmnUtil.createSequenceFlow(str, taskList.get(i).getId(),
+                        taskList.get(i).getLineName(), taskList.get(i).getConditionExpression()));
+            }
+            if ("true".equals(taskList.get(i).getIsEnd())) {
+                process.addFlowElement(BpmnUtil.createSequenceFlow(taskList.get(i).getId(), "end",
+                        taskList.get(i).getLineName(), taskList.get(i).getConditionExpression()));
+            }
+//            process.addFlowElement(BpmnUtil.createSequenceFlow(taskList.get(i - 1).getId(), taskList.get(i).getId()));
+        }
+//        process.addFlowElement(BpmnUtil.createSequenceFlow(taskList.get(taskList.size() - 1).getId(), "end"));
+
+        // 2. Generate graphical information 生成BPMN自动布局
+        new BpmnAutoLayout(bpmnModel).execute();
+
+        // 3. Deploy the process to the engine 部署BPMN模型
+        //resourceName dynamic-model.bpmn
+        //name Dynamic process deployment
+        Deployment deployment = repositoryService.createDeployment()
+                .addBpmnModel(resourceName, bpmnModel).name(name).deploy();
+
+        //4启动流程，5发起任务通过其他接口
+
+        try {
+            // 6. 保存流程图通过启动流程接口保存
+            // 7. Save resulting BPMN xml to a file 保存为bpmn.xml的xml类型文件 dynamic-model.bpmn
+            InputStream processBpmn = repositoryService.getResourceAsStream(deployment.getId(), resourceName);
+            // target/process.bpmn20.xml
+            FileUtils.copyInputStreamToFile(processBpmn, new File(filePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
